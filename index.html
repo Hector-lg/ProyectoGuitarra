@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guitarra Interactiva 3D</title>
+  <link rel="stylesheet" href="/src/css/styles.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loader">
+      <div class="loader-text">Cargando...</div>
+      <div class="loader-bar">
+        <div class="loader-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas 3D (fijo en el fondo) -->
+  <canvas id="guitar-canvas"></canvas>
+
+  <!-- Contenedor de scroll para storytelling -->
+  <div class="scroll-container">
+
+    <!-- Sección 1: Intro -->
+    <section class="section section-intro" data-section="intro">
+      <div class="section-content">
+        <h1>La Guitarra</h1>
+        <p class="subtitle">Un viaje por las cuerdas del alma</p>
+      </div>
+    </section>
+
+    <!-- Sección 2: Anatomía -->
+    <section class="section section-anatomy" data-section="anatomy">
+      <div class="section-content">
+        <h2>Anatomía</h2>
+        <p>Cada parte tiene su propósito, cada curva su razón de ser.</p>
+      </div>
+    </section>
+
+    <!-- Sección 3: El Mástil -->
+    <section class="section section-fretboard" data-section="fretboard">
+      <div class="section-content">
+        <h2>El Mástil</h2>
+        <p>Donde los dedos danzan y las notas cobran vida.</p>
+      </div>
+    </section>
+
+    <!-- Sección 4: Escalas -->
+    <section class="section section-scales" data-section="scales">
+      <div class="section-content">
+        <h2>Escalas</h2>
+        <p>El mapa del sonido. Explora las escalas musicales.</p>
+
+        <!-- UI de Escalas -->
+        <div class="scales-ui">
+          <div class="scale-selector">
+            <label for="scale-type">Escala:</label>
+            <select id="scale-type">
+              <option value="major">Mayor</option>
+              <option value="minor">Menor Natural</option>
+              <option value="pentatonic-major">Pentatónica Mayor</option>
+              <option value="pentatonic-minor">Pentatónica Menor</option>
+              <option value="blues">Blues</option>
+            </select>
+          </div>
+          <div class="root-selector">
+            <label for="root-note">Tónica:</label>
+            <select id="root-note">
+              <option value="C">Do (C)</option>
+              <option value="C#">Do# (C#)</option>
+              <option value="D">Re (D)</option>
+              <option value="D#">Re# (D#)</option>
+              <option value="E">Mi (E)</option>
+              <option value="F">Fa (F)</option>
+              <option value="F#">Fa# (F#)</option>
+              <option value="G">Sol (G)</option>
+              <option value="G#">Sol# (G#)</option>
+              <option value="A">La (A)</option>
+              <option value="A#">La# (A#)</option>
+              <option value="B">Si (B)</option>
+            </select>
+          </div>
+          <button id="play-scale-btn" class="play-scale-btn">Reproducir Escala</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección 5: Toca -->
+    <section class="section section-play" data-section="play">
+      <div class="section-content">
+        <h2>Toca</h2>
+        <p>Haz click en las cuerdas para escuchar su sonido.</p>
+        <div class="play-instructions">
+          <span>Arrastra para rotar</span>
+          <span>Scroll para zoom</span>
+          <span>Click para tocar</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Script principal -->
+  <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>
