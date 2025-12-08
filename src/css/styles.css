@@ -531,3 +531,38 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-secondary);
 }
+
+/* ========================================
+   Etiquetas de Notas - Scale Markers
+   ======================================== */
+.note-label {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  transform: translate(-50%, -120%);
+  transition: opacity 0.3s ease;
+  background: var(--color-canvas-pure);
+  border: 1px solid var(--color-accent);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  min-width: 120px;
+  text-align: center;
+}
+
+.note-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.02em;
+}
+
+.note-info {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

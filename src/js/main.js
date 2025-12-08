@@ -18,8 +18,10 @@ let scene, camera, renderer, controls
 let guitar = null
 let audioContext = null
 let stringBuffers = {}  // Buffers para cada cuerda
+let scaleMajorBuffer = null  // Buffer para la escala completa
 let hitEffects = []     // Efectos visuales activos
 let scaleMarkers = []   // Marcadores de escala en el mástil
+let scaleLabels = []    // Etiquetas HTML para las notas
 let isPlayingScale = false  // Estado de reproducción de escala
 
 const canvas = document.getElementById('guitar-canvas')
@@ -53,6 +55,17 @@ async function initAudio() {
       console.error(`Error cargando cuerda ${string.name}:`, error)
     }
   }
+  
+  // Cargar escala mayor completa
+  try {
+    const response = await fetch('/sounds/C_majorScale.wav')
+    const arrayBuffer = await response.arrayBuffer()
+    scaleMajorBuffer = await audioContext.decodeAudioData(arrayBuffer)
+    console.log('Escala mayor cargada')
+  } catch (error) {
+    console.error('Error cargando escala mayor:', error)
+  }
+  
   console.log('Todos los audios cargados')
 }
 
@@ -146,7 +159,7 @@ const C_MAJOR_POSITIONS = [
   { string: 4, fret: 10, note: 'C' }   // Do octava
 ]
 
-// Crear marcadores visuales de la escala
+// Crear marcadores visuales de la escala con etiquetas
 function createScaleMarkers() {
   // Limpiar marcadores anteriores
   clearScaleMarkers()
@@ -173,22 +186,43 @@ function createScaleMarkers() {
 
     const marker = new THREE.Mesh(geometry, material)
     
-    // Posicionar el marcador
-    // Misma orientación que las líneas guía
-    marker.position.set(stringPos, 0.2, fretPos)
+    // Posicionar el marcador para vista lateral derecha
+    // La guitarra está en posX:-2, rotY:-90°
+    // Con la rotación, X local mueve hacia adelante/atrás en pantalla
+    marker.position.set(stringPos, 0.49, fretPos-2.32)
     
     marker.userData.scaleIndex = index
     marker.userData.stringNumber = pos.string.toString()
+    marker.userData.note = pos.note
+    marker.userData.fret = pos.fret
+    marker.userData.string = pos.string
     marker.userData.isScaleMarker = true
 
     guitar.add(marker)
     scaleMarkers.push(marker)
+
+    // Crear etiqueta HTML para esta nota
+    createNoteLabel(marker, pos)
   })
 
   console.log('Marcadores de escala creados:', scaleMarkers.length)
 }
 
-// Limpiar marcadores de escala
+// Crear etiqueta HTML para mostrar información de la nota
+function createNoteLabel(marker, position) {
+  const label = document.createElement('div')
+  label.className = 'note-label'
+  label.innerHTML = `
+    <div class="note-name">${position.note}</div>
+    <div class="note-info">Cuerda ${position.string} - Traste ${position.fret}</div>
+  `
+  label.style.opacity = '0'
+  document.body.appendChild(label)
+  
+  scaleLabels.push({ element: label, marker: marker })
+}
+
+// Limpiar marcadores de escala y etiquetas
 function clearScaleMarkers() {
   scaleMarkers.forEach(marker => {
     guitar.remove(marker)
@@ -196,6 +230,14 @@ function clearScaleMarkers() {
     marker.material.dispose()
   })
   scaleMarkers = []
+  
+  // Limpiar etiquetas HTML
+  scaleLabels.forEach(({ element }) => {
+    if (element.parentNode) {
+      element.parentNode.removeChild(element)
+    }
+  })
+  scaleLabels = []
 }
 
 // Obtener posición X de la cuerda
@@ -212,17 +254,40 @@ function getFretPosition(fretNumber) {
   return startPos + (fretNumber * fretSpacing)
 }
 
-// Reproducir escala completa con animación
+// Reproducir escala completa con animación sincronizada
 async function playScale() {
   if (isPlayingScale || scaleMarkers.length === 0) return
+  
+  if (!scaleMajorBuffer) {
+    console.error('Audio de escala no cargado')
+    return
+  }
   
   isPlayingScale = true
   const playBtn = document.getElementById('play-scale-btn')
   if (playBtn) playBtn.disabled = true
 
+  // Reanudar contexto si está suspendido
+  if (audioContext.state === 'suspended') {
+    await audioContext.resume()
+  }
+
+  // Reproducir audio completo de la escala
+  const source = audioContext.createBufferSource()
+  source.buffer = scaleMajorBuffer
+  const gainNode = audioContext.createGain()
+  gainNode.gain.value = 0.8
+  source.connect(gainNode)
+  gainNode.connect(audioContext.destination)
+  source.start(0)
+  
+  console.log('Reproduciendo escala mayor')
+
+  // Animar marcadores con 500ms entre cada uno
+  const noteDuration = 500  // medio segundo por nota
+  
   for (let i = 0; i < scaleMarkers.length; i++) {
     const marker = scaleMarkers[i]
-    const stringNum = marker.userData.stringNumber
 
     // Animar marcador (iluminar)
     gsap.to(marker.material, {
@@ -239,16 +304,13 @@ async function playScale() {
       ease: 'elastic.out(1, 0.5)'
     })
 
-    // Reproducir nota
-    playString(stringNum)
-
-    // Esperar antes de la siguiente nota
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Esperar medio segundo antes de la siguiente nota
+    await new Promise(resolve => setTimeout(resolve, noteDuration))
 
     // Desanimar marcador
     gsap.to(marker.material, {
       emissive: new THREE.Color(0x000000),
-      opacity: 0.6,
+      opacity: 0.5,
       duration: 0.3
     })
 
@@ -784,6 +846,45 @@ function onWindowResize() {
 }
 
 // ========================================
+// Actualizar etiquetas de notas
+// ========================================
+function updateNoteLabels() {
+  // Solo mostrar etiquetas en la sección de escalas
+  const scalesSection = document.getElementById('scales')
+  if (!scalesSection) return
+  
+  const rect = scalesSection.getBoundingClientRect()
+  const isScalesSectionVisible = rect.top < window.innerHeight && rect.bottom > 0
+  
+  scaleLabels.forEach(({ element, marker }) => {
+    if (!isScalesSectionVisible) {
+      element.style.opacity = '0'
+      return
+    }
+    
+    // Obtener posición 3D del marcador en coordenadas del mundo
+    const worldPos = new THREE.Vector3()
+    marker.getWorldPosition(worldPos)
+    
+    // Proyectar a coordenadas de pantalla
+    const screenPos = worldPos.clone().project(camera)
+    
+    // Convertir a coordenadas de píxeles
+    const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth
+    const y = (-(screenPos.y * 0.5) + 0.5) * window.innerHeight
+    
+    // Solo mostrar si está delante de la cámara
+    if (screenPos.z < 1) {
+      element.style.left = `${x}px`
+      element.style.top = `${y}px`
+      element.style.opacity = '1'
+    } else {
+      element.style.opacity = '0'
+    }
+  })
+}
+
+// ========================================
 // Animation Loop
 // ========================================
 function animate() {
@@ -791,6 +892,9 @@ function animate() {
 
   // Actualizar controles
   controls.update()
+  
+  // Actualizar etiquetas de notas
+  updateNoteLabels()
 
   renderer.render(scene, camera)
 }
