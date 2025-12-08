@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guitarra Interactiva 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/css/styles.css">
 </head>
 <body>
@@ -20,19 +23,46 @@
   <!-- Canvas 3D (fijo en el fondo) -->
   <canvas id="guitar-canvas"></canvas>
 
+  <!-- Navegación / Índice -->
+  <nav class="nav-index">
+    <a href="#intro" class="nav-link active" data-section="intro">Intro</a>
+    <a href="#anatomy" class="nav-link" data-section="anatomy">Anatomía</a>
+    <a href="#fretboard" class="nav-link" data-section="fretboard">Mástil</a>
+    <a href="#scales" class="nav-link" data-section="scales">Escalas</a>
+  </nav>
+
   <!-- Contenedor de scroll para storytelling -->
   <div class="scroll-container">
 
     <!-- Sección 1: Intro -->
-    <section class="section section-intro" data-section="intro">
+    <section id="intro" class="section section-intro" data-section="intro">
       <div class="section-content">
         <h1>La Guitarra</h1>
         <p class="subtitle">Un viaje por las cuerdas del alma</p>
+        
+        <!-- Botón de controles -->
+        <div class="controls-button">
+          <button class="btn-controls">Controles</button>
+          <div class="controls-tooltip">
+            <div class="control-item">
+              <span class="control-icon">🖱️</span>
+              <span class="control-text">Arrastra para rotar</span>
+            </div>
+            <div class="control-item">
+              <span class="control-icon">👆</span>
+              <span class="control-text">Click en cuerdas para tocar</span>
+            </div>
+            <div class="control-item">
+              <span class="control-icon">📜</span>
+              <span class="control-text">Scroll para explorar</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Sección 2: Anatomía -->
-    <section class="section section-anatomy" data-section="anatomy">
+    <section id="anatomy" class="section section-anatomy" data-section="anatomy">
       <div class="section-content">
         <h2>Anatomía</h2>
         <p>Cada parte tiene su propósito, cada curva su razón de ser.</p>
@@ -40,7 +70,7 @@
     </section>
 
     <!-- Sección 3: El Mástil -->
-    <section class="section section-fretboard" data-section="fretboard">
+    <section id="fretboard" class="section section-fretboard" data-section="fretboard">
       <div class="section-content">
         <h2>El Mástil</h2>
         <p>Donde los dedos danzan y las notas cobran vida.</p>
@@ -48,10 +78,12 @@
     </section>
 
     <!-- Sección 4: Escalas -->
-    <section class="section section-scales" data-section="scales">
+    <section id="scales" class="section section-scales" data-section="scales">
       <div class="section-content">
-        <h2>Escalas</h2>
-        <p>El mapa del sonido. Explora las escalas musicales.</p>
+        <div class="scales-text">
+          <h2>Escalas</h2>
+          <p>El mapa del sonido. Explora las escalas musicales.</p>
+        </div>
 
         <!-- UI de Escalas -->
         <div class="scales-ui">
@@ -83,19 +115,6 @@
             </select>
           </div>
           <button id="play-scale-btn" class="play-scale-btn">Reproducir Escala</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sección 5: Toca -->
-    <section class="section section-play" data-section="play">
-      <div class="section-content">
-        <h2>Toca</h2>
-        <p>Haz click en las cuerdas para escuchar su sonido.</p>
-        <div class="play-instructions">
-          <span>Arrastra para rotar</span>
-          <span>Scroll para zoom</span>
-          <span>Click para tocar</span>
         </div>
       </div>
     </section>

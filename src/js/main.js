@@ -99,11 +99,11 @@ function createStringVisualGuides() {
     
     const geometry = new THREE.BufferGeometry().setFromPoints(points)
     
-    // Material con brillo dorado sutil y transparencia
+    // Material con Royal Blue accent color
     const material = new THREE.LineBasicMaterial({
-      color: 0xd4af37,  // Color dorado
+      color: 0x2563EB,  // Royal Blue
       transparent: true,
-      opacity: 0.3,     // Transparente pero visible
+      opacity: 0.5,     // Mayor opacidad para ser visible en fondo blanco
       linewidth: 2
     })
     
@@ -163,12 +163,12 @@ function createScaleMarkers() {
     // Crear esfera para el marcador
     const geometry = new THREE.SphereGeometry(0.03, 16, 16)
     const material = new THREE.MeshStandardMaterial({
-      color: 0xd4af37,  // Dorado
+      color: 0x2563EB,  // Royal Blue accent
       emissive: 0x000000,
-      metalness: 0.5,
-      roughness: 0.3,
+      metalness: 0.2,
+      roughness: 0.7,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.5
     })
 
     const marker = new THREE.Mesh(geometry, material)
@@ -226,7 +226,7 @@ async function playScale() {
 
     // Animar marcador (iluminar)
     gsap.to(marker.material, {
-      emissive: new THREE.Color(0xffd700),
+      emissive: new THREE.Color(0x2563EB),  // Royal Blue glow
       opacity: 1,
       duration: 0.2
     })
@@ -296,7 +296,7 @@ function createHitEffect(position) {
   // Crear círculo que se expande y desvanece
   const geometry = new THREE.RingGeometry(0.02, 0.05, 32)
   const material = new THREE.MeshBasicMaterial({
-    color: 0xd4af37,
+    color: 0x2563EB,  // Royal Blue
     transparent: true,
     opacity: 1,
     side: THREE.DoubleSide
@@ -337,13 +337,14 @@ function createHitEffect(position) {
 // ========================================
 function setupGuitarInteraction() {
   const raycaster = new THREE.Raycaster()
-  raycaster.params.Line.threshold = 0.1  // Hacer las líneas más fáciles de clicar
+  raycaster.params.Line.threshold = 0.2  // Hacer las líneas más fáciles de clicar
   const mouse = new THREE.Vector2()
 
   // Efecto hover sobre las líneas
   canvas.addEventListener('mousemove', (event) => {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    const rect = canvas.getBoundingClientRect()
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
     raycaster.setFromCamera(mouse, camera)
 
@@ -353,7 +354,7 @@ function setupGuitarInteraction() {
       // Resetear opacidad de todas las líneas
       guitar.traverse((child) => {
         if (child.userData.isStringGuide) {
-          child.material.opacity = 0.3
+          child.material.opacity = 0.5
         }
       })
 
@@ -361,7 +362,7 @@ function setupGuitarInteraction() {
       if (intersects.length > 0) {
         const hitObject = intersects[0].object
         if (hitObject.userData.isStringGuide) {
-          hitObject.material.opacity = 0.8
+          hitObject.material.opacity = 0.9
           canvas.style.cursor = 'pointer'
           return
         }
@@ -371,8 +372,9 @@ function setupGuitarInteraction() {
   })
 
   canvas.addEventListener('click', (event) => {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    const rect = canvas.getBoundingClientRect()
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
     raycaster.setFromCamera(mouse, camera)
 
@@ -406,7 +408,7 @@ function setupGuitarInteraction() {
 function init() {
   // Crear escena
   scene = new THREE.Scene()
-  scene.background = new THREE.Color(0x0a0a0f)
+  scene.background = new THREE.Color(0xFAFAFA)  // Ghost White background
 
   // Crear cámara
   camera = new THREE.PerspectiveCamera(
@@ -475,32 +477,27 @@ function init() {
 // Luces
 // ========================================
 function setupLights() {
-  // Luz ambiental suave
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
+  // Luz ambiental más fuerte para ambiente clínico
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
   scene.add(ambientLight)
 
-  // Luz principal (key light)
-  const mainLight = new THREE.DirectionalLight(0xfff5e6, 1)
+  // Luz principal (key light) - más suave
+  const mainLight = new THREE.DirectionalLight(0xffffff, 0.6)
   mainLight.position.set(5, 5, 5)
   mainLight.castShadow = true
   mainLight.shadow.mapSize.width = 2048
   mainLight.shadow.mapSize.height = 2048
   scene.add(mainLight)
 
-  // Luz de relleno (fill light)
-  const fillLight = new THREE.DirectionalLight(0xc9a227, 0.3)
+  // Luz de relleno (fill light) - neutral
+  const fillLight = new THREE.DirectionalLight(0xffffff, 0.3)
   fillLight.position.set(-5, 0, -5)
   scene.add(fillLight)
 
-  // Luz de acento (rim light)
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.5)
+  // Luz de acento (rim light) - suave
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.4)
   rimLight.position.set(0, -5, -5)
   scene.add(rimLight)
-
-  // Luz puntual cálida
-  const pointLight = new THREE.PointLight(0xd4af37, 0.5, 10)
-  pointLight.position.set(2, 2, 2)
-  scene.add(pointLight)
 }
 
 // ========================================
@@ -541,6 +538,7 @@ function loadGuitarModel() {
       guitar.rotation.x = Math.PI / 2    // 90° para acostar la guitarra (horizontal)
       guitar.rotation.y = 0               // Sin rotación en Y
       guitar.rotation.z = 0               // 0° para que mire hacia la cámara (al otro lado)
+      guitar.position.z = -2              // Empieza más alejada
 
       // Habilitar sombras en todos los meshes
       model.traverse((child) => {
@@ -623,18 +621,59 @@ function createPlaceholderGuitar() {
 // ========================================
 function setupScrollAnimations() {
   const sections = document.querySelectorAll('.section')
+  const navLinks = document.querySelectorAll('.nav-link')
+
+  // Función para actualizar el link activo
+  function updateActiveNav(sectionId) {
+    navLinks.forEach(link => {
+      link.classList.remove('active')
+      if (link.dataset.section === sectionId) {
+        link.classList.add('active')
+      }
+    })
+  }
+
+  // Manejar clicks en la navegación para scroll suave con offset correcto
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault()
+      const targetId = link.getAttribute('href').substring(1)
+      const targetSection = document.getElementById(targetId)
+
+      if (targetSection) {
+        // Para la sección de escalas, hacer scroll más abajo para que la animación complete
+        const offset = targetId === 'scales' ? window.innerHeight * 0.5 : 0
+        const targetPosition = targetSection.offsetTop + offset
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        })
+      }
+    })
+  })
 
   // Animación de aparición de contenido de secciones
   sections.forEach((section) => {
     const content = section.querySelector('.section-content')
+    const sectionId = section.dataset.section
+    const isScalesSection = sectionId === 'scales'
 
     ScrollTrigger.create({
       trigger: section,
-      start: 'top 80%',
-      end: 'bottom 20%',
-      onEnter: () => content.classList.add('visible'),
-      onLeave: () => content.classList.remove('visible'),
-      onEnterBack: () => content.classList.add('visible'),
+      start: 'top 50%',
+      end: isScalesSection ? 'bottom bottom' : 'bottom 50%',
+      onEnter: () => {
+        content.classList.add('visible')
+        updateActiveNav(sectionId)
+      },
+      onLeave: () => {
+        if (!isScalesSection) content.classList.remove('visible')
+      },
+      onEnterBack: () => {
+        content.classList.add('visible')
+        updateActiveNav(sectionId)
+      },
       onLeaveBack: () => content.classList.remove('visible')
     })
   })
@@ -644,7 +683,10 @@ function setupScrollAnimations() {
     rotX: Math.PI / 2,    // Horizontal
     rotY: 0,              // Sin rotación en Y
     rotZ: 0,              // Mirando hacia la cámara (al otro lado)
-    posY: 0
+    posX: 0,              // Posición horizontal (izquierda/derecha)
+    posY: 0,
+    posZ: -2,             // Empieza más alejada
+    scale: 1              // Escala para zoom
   }
 
   // Timeline principal - anima la GUITARRA, no la cámara
@@ -660,51 +702,54 @@ function setupScrollAnimations() {
           guitar.rotation.x = guitarAnimation.rotX
           guitar.rotation.y = guitarAnimation.rotY
           guitar.rotation.z = guitarAnimation.rotZ
+          guitar.position.x = guitarAnimation.posX
           guitar.position.y = guitarAnimation.posY
+          guitar.position.z = guitarAnimation.posZ
+          guitar.scale.set(guitarAnimation.scale, guitarAnimation.scale, guitarAnimation.scale)
         }
       }
     }
   })
 
-  // Intro: guitarra horizontal de frente
-  // Anatomy: rotar para ver el costado
+  // Intro: guitarra horizontal de frente, se acerca e inclina a la derecha
+  // Anatomy: rotar para ver el costado (hacia la derecha)
   tl.to(guitarAnimation, {
     rotX: Math.PI / 2,
-    rotY: Math.PI / 4,
+    rotY: -Math.PI / 4,   // Negativo para inclinarse a la derecha
     rotZ: 0,
+    posX: 0,
+    posY: 0,
+    posZ: 0,              // Se acerca
+    scale: 1,
     duration: 1,
     ease: 'power1.inOut'
   }, 0)
 
-  // Fretboard: rotar para ver el mástil desde arriba
+  // Fretboard: hacer zoom y bajar por el mástil (de arriba hacia abajo)
   tl.to(guitarAnimation, {
-    rotX: Math.PI / 3,
-    rotY: 0,
+    rotX: Math.PI / 2.5,  // Vista ligeramente inclinada desde arriba
+    rotY: -Math.PI / 6,   // Mantener ligera inclinación lateral
     rotZ: 0,
-    posY: 0.3,
+    posX: 0,
+    posY: -0.8,           // Bajar para ver el mástil desde arriba
+    posZ: 2,              // Acercar mucho (zoom in)
+    scale: 1.5,           // Zoom adicional con escala
     duration: 1,
     ease: 'power1.inOut'
   }, 1)
 
-  // Scales: vista del mástil (inclinado para ver trastes)
+  // Scales: vista del mástil desde el lado derecho
   tl.to(guitarAnimation, {
-    rotX: Math.PI / 4,
-    rotY: 0,
+    rotX: Math.PI / 2,    // Horizontal
+    rotY: -Math.PI / 2,   // Girar 90° para ver desde el lado
     rotZ: 0,
-    posY: 0.5,
-    duration: 1,
-    ease: 'power1.inOut'
-  }, 2)
-
-  // Play: volver a posición frontal horizontal
-  tl.to(guitarAnimation, {
-    rotX: Math.PI / 2,
-    rotY: 0,
-    rotZ: 0,
+    posX: -2,           // Mover a la derecha de la pantalla (valores pequeños: -1 a -3)
     posY: 0,
-    duration: 1,
-    ease: 'power1.inOut'
-  }, 3)
+    posZ: 1,              // Acercar un poco
+    scale: 1.8,           // Zoom moderado
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 2)
 }
 
 // ========================================
